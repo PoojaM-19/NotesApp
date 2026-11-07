@@ -4,13 +4,25 @@ const cors = require("cors");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
+const noteRoutes = require("./routes/noteRoutes");
+const errorMiddleware = require("./middleware/errorMiddleware");
+const notFoundMiddleware = require("./middleware/notFoundMiddleware");
+const authLimiter = require("./middleware/rateLimitMiddleware");
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+  })
+);
 app.use(express.json());
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
+
+app.use("/api/notes", noteRoutes);
+app.use(errorMiddleware);
+app.use(errorMiddleware);
 
 // Test route
 app.get("/", (req, res) => {
